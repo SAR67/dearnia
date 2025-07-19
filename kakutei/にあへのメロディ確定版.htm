@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!-- saved from url=(0170)file:///Users/kitayamasarasa/Desktop/%E3%82%BB%E3%82%99%E3%83%9F/%E3%83%8B%E3%82%A2/%E3%81%AB%E3%81%82%E3%81%B8%E3%81%AE%E3%83%A1%E3%83%AD%E3%83%86%E3%82%99%E3%82%A3.html -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>にあへのメロディ</title>
+  <script src="./にあへのメロディ確定版_files/Tone.min.js"></script>
+  <style>
+    body {
+      background: #fefcf8;
+      font-family: 'Hiragino Maru Gothic ProN', sans-serif;
+      text-align: center;
+      padding: 1rem;
+      margin: 0;
+    }
+    h1 {
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
+    }
+    .instrument-container {
+      position: relative;
+      width: 300px;
+      margin: 2rem auto;
+    }
+    .instrument-image {
+      width: 100%;
+      height: auto;
+    }
+    .note-button {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-radius: 100%;
+      border: none;
+      background-color: rgba(255,240,230,1);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .note-◎ { top: 84.5px; left: 118px; }
+    .note-◯ { top: 122px; left: 107.5px; }
+    .note-∴ { top: 160px; left: 97.3px; }
+    .note-☽ { top: 198px; left: 87.5px; }
+    .note-▽ { top: 236px; left: 78px; }
+    .note-♭ { top: 275px; left: 67.5px; }
+
+    .display {
+      margin: 2rem auto;
+      min-height: 3rem;
+      font-size: 1.5rem;
+    }
+    .end-screen {
+      display: none;
+      font-size: 1.5rem;
+      margin-top: 3rem;
+      animation: fadeIn 2s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    audio {
+      margin-top: 1rem;
+    }
+    @media screen and (max-width: 600px) {
+      .instrument-container { width: 90%; }
+      .note-button {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>にあへのメロディ</h1>
+  <div class="instrument-container">
+    <img src="./にあへのメロディ確定版_files/instrument.png" alt="にあの楽器" class="instrument-image">
+    <button class="note-button note-◎" data-note="◎">◎</button>
+    <button class="note-button note-◯" data-note="◯">◯</button>
+    <button class="note-button note-∴" data-note="∴">∴</button>
+    <button class="note-button note-☽" data-note="☽">☽</button>
+    <button class="note-button note-▽" data-note="▽">▽</button>
+    <button class="note-button note-♭" data-note="♭">♭</button>
+  </div>
+  <div class="display" id="melodyDisplay"></div>
+  <div class="end-screen" id="endScreen">
+    <p>ありがとう、やっと にあ の音が聴けたよ。</p>
+    <p>（エンドロール）</p>
+    <audio id="endMusic" controls="" autoplay="">
+      <source src="your-final-melody.mp3" type="audio/mp3">
+      このブラウザは音声再生に対応していません。
+    </audio>
+  </div>
+  <script>
+    const correctSequence = ['♭','▽','◎','◎','◎','◯','∴'];
+    let userSequence = [];
+
+    const buttons = document.querySelectorAll('.note-button');
+    const display = document.getElementById('melodyDisplay');
+    const endScreen = document.getElementById('endScreen');
+　 const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+
+
+   const noteMap = {
+  '◎': ['E4', 'G4', 'B4'],     // Eマイナー
+  '◯': ['D4', 'F#4', 'A4'],    // Dメジャー
+  '∴': ['C4', 'E4', 'G4'],     // Cメジャー
+  '☽': ['A3', 'C4', 'E4'],     // Aマイナー
+  '▽': ['D4', 'G4', 'B4'],     // Gメジャー転回
+  '♭': ['A#3', 'D4', 'F4']     // B♭メジャー
+};
+
+
+　function playNote(note) {
+  const el = document.createElement('span');
+  el.textContent = note;
+  el.style.margin = '0 0.2rem';
+  display.appendChild(el);
+
+  const pitches = noteMap[note];
+  if (pitches && Array.isArray(pitches)) {
+    const now = Tone.now();
+    pitches.forEach((pitch, index) => {
+      synth.triggerAttackRelease(pitch, '8n', now + index * 0.3); // 0.1秒ずつずらす
+    });
+  }
+}
+
+
+
+    function checkSequence() {
+      if (userSequence.length === correctSequence.length) {
+        const isCorrect = userSequence.every((val, index) => val === correctSequence[index]);
+        if (isCorrect) {
+          document.querySelector('.instrument-container').style.display = 'none';
+          display.style.display = 'none';
+          endScreen.style.display = 'block';
+          document.getElementById('endMusic').play();
+        } else {
+          userSequence = [];
+          display.innerHTML = '';
+        }
+      }
+    }
+
+    buttons.forEach(button => {
+      button.addEventListener('click', async () => {
+        await Tone.start();
+        const note = button.getAttribute('data-note');
+        userSequence.push(note);
+        playNote(note);
+        checkSequence();
+      });
+    });
+  </script>
+
+
+</body></html>
